@@ -10,7 +10,7 @@ git clone https://github.com/mpenick/temporal-astra-cql-proxy.git
 cd temporal-astra-cql-proxy
 ```
 
-* Update the Temporal schema by running `./schema.sh` or:
+* Update the Temporal schema by running `./schema.sh` OR run these commands:
 ```sh
 docker-compose -f docker-compose-schema.yaml run temporal-admin-tools \
   -ep cql-proxy -k temporal setup-schema -v 0.0
