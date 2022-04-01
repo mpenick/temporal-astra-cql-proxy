@@ -8,16 +8,18 @@
     * `https://astra.datastax.com/org/.../database/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
   * Or the "Datacenter ID" without the `-1` at the end (you'll have to copy and remove that trailing `-1`)
     ![image](https://user-images.githubusercontent.com/3710715/161331138-906f4f7f-919e-4f47-a731-a855d54369c5.png)
-* Update `.env` with your Astra token and DB identifier
-  ```yaml
-  # Update these
-  ASTRA_TOKEN=updateme
-  ASTRA_DATABASE_ID=updateme
-  ```
+    
 * Clone this repo
 ```sh
 git clone https://github.com/mpenick/temporal-astra-cql-proxy.git
 cd temporal-astra-cql-proxy
+```
+
+* Update `.env` with your Astra token and DB identifier
+```yaml
+# Update these
+ASTRA_TOKEN=updateme
+ASTRA_DATABASE_ID=updateme
 ```
 
 * Update the Temporal schema by running `./schema.sh` OR run these commands:
