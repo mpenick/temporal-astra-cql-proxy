@@ -17,8 +17,36 @@ docker-compose -f docker-compose-cqlproxy-schema.yml run temporal-admin-tools \
   -ep cql-proxy -k temporal_visibility update-schema -d schema/cassandra/visibility/versioned/
 ```
 
+Note: This setup currently has issues because the clustering order does contain the full clustering
+key. The Temporal Cassandra schema has been copied to this repo and modified to work. This change
+should be pushed upstream because the schema is technically underspecified.
+
+```diff
+diff --git a/schema/cassandra/visibility/versioned/v1.0/schema.cql b/schema/cassandra/visibility/versioned/v1.0/schema.cql
+index 5fcad40cc..de8b4fe2e 100644
+--- a/schema/cassandra/visibility/versioned/v1.0/schema.cql
++++ b/schema/cassandra/visibility/versioned/v1.0/schema.cql
+@@ -10,7 +10,7 @@ CREATE TABLE open_executions (
+   encoding             text,
+   task_queue            text,
+   PRIMARY KEY  ((namespace_id, namespace_partition), start_time, run_id)
+-) WITH CLUSTERING ORDER BY (start_time DESC)
++) WITH CLUSTERING ORDER BY (start_time DESC, run_id DESC)
+   AND COMPACTION = {
+     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy',
+     'tombstone_threshold': 0.4
+@@ -37,7 +37,7 @@ CREATE TABLE closed_executions (
+   encoding             text,
+   task_queue            text,
+   PRIMARY KEY  ((namespace_id, namespace_partition), close_time, run_id)
+-) WITH CLUSTERING ORDER BY (close_time DESC)
++) WITH CLUSTERING ORDER BY (close_time DESC, run_id DESC)
+   AND COMPACTION = {
+     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
+   }
+```
+
 * Start up Temporal!
 ```sh
 docker-compose -f docker-compose-cqlproxy.yml up
 ```
-

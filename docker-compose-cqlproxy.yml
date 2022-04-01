@@ -1,7 +1,7 @@
 version: "3.5"
 services:
   cql-proxy:
-    container_name: temporal-cqlproxy
+    container_name: cqlproxy
     image: datastax/cql-proxy:v${CQL_PROXY_VERSION}
     healthcheck:
       test: 'printf "GET /readiness HTTP/1.0\r\nHost: localhost\r\n\r\n" | nc localhost 8000 | grep "200 OK"'
@@ -21,7 +21,7 @@ services:
     container_name: temporal
     depends_on:
       cql-proxy:
-        condition: service_healthy
+        condition: service_healthy # Wait for readiness check on cql-proxy
     environment:
       - CASSANDRA_SEEDS=cqlproxy
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
