@@ -2,8 +2,18 @@
 
 * Create an Astra DB at [https://astra.datastax.com/](https://astra.datastax.com/)
 * Add two keyspaces in the Astra DB UI via "Add Keyspace": `temporal` and `temporal_visibility`
-* Create a new Astra token and get your DB's identifier
-  * Update `.env` with your Astra token and DB identifier
+  ![image](https://user-images.githubusercontent.com/3710715/161330020-ad4ca2ac-bbad-427c-9d76-b2845f8d740e.png)
+* Create a new [Astra token] and get your DB's identifier
+  * DB identifer is the last ID in the URL when you DB is selected (the "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" part)
+    * `https://astra.datastax.com/org/.../database/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+  * Or the "Datacenter ID" without the `-1` at the end (you'll have to copy and remove that trailing `-1`)
+    ![image](https://user-images.githubusercontent.com/3710715/161331138-906f4f7f-919e-4f47-a731-a855d54369c5.png)
+* Update `.env` with your Astra token and DB identifier
+  ```yaml
+  # Update these
+  ASTRA_TOKEN=updateme
+  ASTRA_DATABASE_ID=updateme
+  ```
 * Clone this repo
 ```sh
 git clone https://github.com/mpenick/temporal-astra-cql-proxy.git
@@ -57,3 +67,5 @@ index 5fcad40cc..de8b4fe2e 100644
      'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
    }
 ```
+
+[Astra token]: https://docs.datastax.com/en/astra/docs/manage-application-tokens.html
