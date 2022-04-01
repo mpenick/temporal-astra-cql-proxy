@@ -3,6 +3,8 @@
 * Create an Astra DB at [https://astra.datastax.com/](https://astra.datastax.com/)
 * Add two keyspaces in the Astra DB UI via "Add Keyspace": `temporal` and `temporal_visibility`
   ![image](https://user-images.githubusercontent.com/3710715/161330020-ad4ca2ac-bbad-427c-9d76-b2845f8d740e.png)
+  **Note:** If you have existing `temporal` and `temporal_visibility` keyspaces you may need to
+  remove and recreate them.
 * Create a new [Astra token] and get your DB's identifier
   * DB identifer is the last ID in the URL when your DB is selected (the "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" part)
     * `https://astra.datastax.com/org/.../database/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
