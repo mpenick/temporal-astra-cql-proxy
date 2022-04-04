@@ -24,6 +24,8 @@ ASTRA_TOKEN=updateme
 ASTRA_DATABASE_ID=updateme
 ```
 
+Make sure you are running a modern version of docker-compose (v2.3.3+ recommended)
+
 * Update the Temporal schema by running `./schema.sh` OR run these commands:
 ```sh
 docker-compose -f docker-compose-schema.yaml run temporal-admin-tools \
