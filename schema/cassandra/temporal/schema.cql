@@ -1,7 +1,7 @@
 CREATE TYPE serialized_event_batch (
   encoding_type text,
   version       int,
-  data          blob,
+  data          blob
 );
 
 CREATE TABLE executions (
@@ -27,8 +27,8 @@ CREATE TABLE executions (
   timer_encoding                 text,
   visibility_task_data           blob,
   visibility_task_encoding       text,
-  tiered_storage_task_data       blob,
-  tiered_storage_task_encoding   text,
+  task_data                      blob,
+  task_encoding                  text,
   next_event_id                  bigint,  -- This is needed to make conditional updates on session history
   range_id                       bigint,  -- Increasing sequence identifier for transfer queue, checkpointed into shard info
   activity_map                   map<bigint, blob>,
@@ -54,13 +54,13 @@ CREATE TABLE executions (
   };
 
 CREATE TABLE history_node (
-  tree_id           uuid,
-  branch_id         uuid,
-  node_id           bigint, -- node_id: first eventID in a batch of events
-  txn_id            bigint, -- for override the same node_id: bigger txn_id wins
-  prev_txn_id       bigint, -- pointing to the previous node: event chaining
-  data                blob, -- Batch of workflow execution history events as a blob
-  data_encoding       text, -- Protocol used for history serialization
+  tree_id           uuid, -- run_id if no reset, otherwise run_id of first run
+  branch_id         uuid, -- changes in case of reset workflow. Conflict resolution can also change branch id.
+  node_id           bigint, -- == first eventID in a batch of events
+  txn_id            bigint, -- in case of multiple transactions on same node, we utilize highest transaction ID. Unique.
+  prev_txn_id       bigint, -- point to the previous node: event chaining
+  data                blob, -- batch of workflow execution history events as a blob
+  data_encoding       text, -- protocol used for history serialization
   PRIMARY KEY ((tree_id), branch_id, node_id, txn_id )
 ) WITH CLUSTERING ORDER BY (branch_id ASC, node_id ASC, txn_id DESC)
   AND COMPACTION = {
@@ -90,6 +90,25 @@ CREATE TABLE tasks (
   task_queue          blob,
   task_queue_encoding text,
   PRIMARY KEY ((namespace_id, task_queue_name, task_queue_type), type, task_id)
+) WITH COMPACTION = {
+    'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
+  };
+
+-- Stores task queue information such as user provided versioning data
+-- OR
+-- Used as a mapping from build id to task queue
+CREATE TABLE task_queue_user_data (
+  namespace_id     uuid,
+  task_queue_name  text,
+  build_id         text,   -- If this row is used as a mapping of build id to task queue, this will not be empty
+  data             blob,   -- temporal.server.api.persistence.v1.TaskQueueUserData
+  data_encoding    text,   -- Encoding type used for serialization, in practice this should always be proto3
+  version          bigint, -- Version of this row, used for optimistic concurrency
+  -- task_queue_name is not a part of the parititioning key to allow cheaply iterating all task queues in a single
+  -- namespace. Access to this table should be infrequent enough that a single partition per namespace can be used.
+  -- Note that this imposes a limit on total task queue user data within one namespace (see the relevant single
+  -- partition Cassandra limits).
+  PRIMARY KEY ((namespace_id), build_id, task_queue_name)
 ) WITH COMPACTION = {
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
   };
@@ -137,17 +156,6 @@ CREATE TABLE queue (
 ) WITH COMPACTION = {
     'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
   };
-
--- TODO deprecate this table in v1.15+
-CREATE TABLE cluster_metadata (
-  metadata_partition      int,
-  data                    blob,
-  data_encoding           text,
-  version                 bigint,
-  PRIMARY KEY  (metadata_partition)
-) WITH COMPACTION = {
-    'class': 'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'
-    };
 
 CREATE TABLE cluster_metadata_info (
   metadata_partition      int,
